@@ -1,0 +1,9 @@
+[run]
+branch = true
+source = .
+omit =
+    */migrations/*
+    */tests*
+    docs/*
+    quizzes/settings/*
+    manage.py

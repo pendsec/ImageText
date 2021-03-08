@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    volumes:
+      - imagetext-db:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: imagetext
+      MYSQL_DATABASE: imagetext_prod
+      MYSQL_ENTRYPOINT_INITDB: ./mysql/docker-entrypoint-initdb.d
+    networks:
+      - internal
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+    networks:
+      - internal
+  web:
+    build: .
+    command: bash -c "python db_healthcheck.py && python manage.py collectstatic --noinput && python manage.py migrate && gunicorn imagetext.wsgi --reload -b 0.0.0.0:8000"
+    container_name: imagetext
+    volumes:
+      - .:/imagetext
+    expose:
+      - 7849
+    networks:
+      - internal
+    env_file:
+      - ./local.env
+    depends_on:
+      - db
+      - redis
+  nginx:
+    restart: always
+    image: nginx:latest
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/imagetext
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - web
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  imagetext-db:
+  node_modules:
