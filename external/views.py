@@ -18,7 +18,9 @@ class PredictView(FormView):
 	def form_valid(self, form):
 		"""Handle valid form POST."""
 		image = self.request.data['image']
-		prediction = GAN.compute_prediction(image)
+		model_type = self.request.data['model_type']
+		beam_index = self.request.data.get('beam_index', 0)
+		prediction = GAN.compute_prediction(image, model_type, beam_index)
 		response = super(PredictView, self).form_valid(form)
 		return redirect('output', text=prediction)
 

@@ -77,10 +77,14 @@ class GAN:
         final = ' '.join(final)
         return final
 
-    def compute_prediction(self, img):
+    def compute_prediction(self, img, model_type, beam_index):
         try:
             photo = self.encode(img).reshape(1, 2048)
-            prediction = self.greedySearch(photo)  # only one sample
+            prediction = None
+            if model_type == "greedy":
+                prediction = self.greedySearch(photo)  # only one sample
+            else:
+                prediction = self.beam_search_predictions(model_type, beam_index)
         except Exception as e:
             return {"status": "Error", "message": str(e)}
 
